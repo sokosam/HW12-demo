@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: db-test-app
+    restart: "no"
+    environment:
+      - PYTHONUNBUFFERED=1
