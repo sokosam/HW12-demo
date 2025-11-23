@@ -1,52 +1,76 @@
-# HW12-demo
+# Multi-Service Demo Application
 
-## Database Connection Test (Intentional Failure)
+This is a demo application with multiple Docker containers showcasing a frontend, backend API, and PostgreSQL database.
 
-This project demonstrates a containerized application that attempts to connect to a non-existent database, designed to fail for testing purposes.
+## Architecture
 
-### Features
+- **Frontend**: Nginx serving a simple web interface
+- **Backend**: Flask API with intentional bugs for testing
+- **Database**: PostgreSQL for data persistence
 
-- Python application that attempts database connection
-- 10-second delay before connection attempt (allows time to observe logs)
-- Intentional failure with detailed error messages
-- Containerized with Docker
+## Services
 
-### Running the Application
+### Frontend (Port 3000)
+A web interface that interacts with the backend API.
 
-**Using Docker Compose (Recommended):**
+### Backend (Port 5000)
+Flask REST API with the following endpoints:
+- `GET /` - API information
+- `GET /health` - Health check
+- `GET /users` - Get all users
+- `POST /users` - Create a new user
+- `GET /users/<id>` - Get a specific user
+- `GET /crash` - **DANGER**: Contains a division by zero bug
+- `GET /dangerous-query` - **DANGER**: SQL injection vulnerability
 
-```bash
-docker-compose up --build
-```
+### Database (Port 5432)
+PostgreSQL database with user data.
 
-**Using Docker directly:**
-
-```bash
-# Build the image
-docker build -t db-test-app .
-
-# Run the container
-docker run --name db-test-app db-test-app
-```
-
-### Expected Behavior
-
-1. Container starts and displays "Starting application..."
-2. Waits 10 seconds (you can monitor logs during this time)
-3. Attempts to connect to database
-4. Fails with connection error (intentional)
-5. Container exits with error code
-
-### Viewing Logs
+## Running the Application
 
 ```bash
-# If using docker-compose
-docker-compose logs -f
+# Start all services
+docker compose up --build
 
-# If using docker directly
-docker logs -f db-test-app
+# Stop all services
+docker compose down
+
+# View logs
+docker compose logs -f
+
+# Check running containers
+docker ps
 ```
 
-### Testing Notes
+## Testing the Crash
+
+The `/crash` endpoint contains an intentional bug that will crash the backend:
+
+```bash
+# This will crash the backend (division by zero)
+curl http://localhost:5000/crash?value=0
+
+# This will work normally
+curl http://localhost:5000/crash?value=5
+```
+
+You can also trigger the crash from the web interface at http://localhost:3000
+
+## Accessing Services
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000
+- **Database**: localhost:5432
+
+## Database Credentials
+
+- Database: `app_db`
+- User: `app_user`
+- Password: `app_password`
+
+## Intentional Bugs
+
+1. **Division by Zero** (`/crash` endpoint): When `value=0` or not provided, causes ZeroDivisionError
+2. **SQL Injection** (`/dangerous-query` endpoint): Vulnerable to SQL injection attacks
 
 The application intentionally tries to connect to a non-existent database host (`nonexistent-database-host`) to simulate connection failures. This is useful for testing error handling, monitoring, and logging systems.
